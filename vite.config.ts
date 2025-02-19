@@ -11,5 +11,11 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        popup: 'public/popup.html',
+        background: './src/background.ts'
+      },
+    },
   },
 });
