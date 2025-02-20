@@ -1,110 +1,132 @@
 import React, { useState, useEffect } from 'react';
+import { Box, Container, IconButton, Paper, Typography, List, ListItem, ListItemText } from '@mui/material';
+import { NotificationsOutlined, Refresh, Edit } from '@mui/icons-material';
 import TimerDisplay from './components/TimerDisplay';
 import TimerControls from './components/TimerControls';
+import { useTimer } from './hooks/useTimer';
+import { TimerRecord } from './types/types';
 import { storageUtils } from './utils/storage';
 import './App.css';
 
 const App: React.FC = () => {
-  const [isRunning, setIsRunning] = useState(false);
-  const [time, setTime] = useState(0);
+  const { isRunning, time, startStop, reset } = useTimer();
+  const [title, setTitle] = useState('Apple Iwork 08 Review');
+  const [earned, setEarned] = useState('$450');
+  const [customer, setCustomer] = useState('Mark Morton');
+  const [records, setRecords] = useState<TimerRecord[]>([]);
 
-  // 保存状态的函数
-  const saveState = async () => {
-    try {
-      const state = {
-        isRunning,
-        time,
-        lastUpdated: Date.now()
-      };
-      console.log('Saving timer state:', state);
-      await storageUtils.saveTimerState(state);
-      console.log('Timer state saved successfully');
-    } catch (error) {
-      console.error('Failed to save timer state:', error);
-    }
-  };
-
-  // 加载保存的状态
   useEffect(() => {
-    const loadSavedState = async () => {
-      try {
-        console.log('Loading saved timer state...');
-        const savedState = await storageUtils.getTimerState();
-        console.log('Loaded timer state:', savedState);
-        if (savedState) {
-          if (savedState.lastUpdated && savedState.isRunning) {
-            const elapsedSeconds = Math.floor((Date.now() - savedState.lastUpdated) / 1000);
-            const newTime = savedState.time + elapsedSeconds;
-            console.log(`Updating time with elapsed seconds: ${elapsedSeconds}, new time: ${newTime}`);
-            setTime(newTime);
-          } else {
-            setTime(savedState.time);
-          }
-          setIsRunning(savedState.isRunning);
-        }
-      } catch (error) {
-        console.error('Failed to load timer state:', error);
-      }
+    const loadRecords = async () => {
+      const savedRecords = await storageUtils.getTimerRecords();
+      setRecords(savedRecords);
     };
-    loadSavedState();
+    loadRecords();
   }, []);
 
-  // 处理计时和状态保存
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-    let saveIntervalId: NodeJS.Timeout;
-
-    if (isRunning) {
-      intervalId = setInterval(() => {
-        setTime(prevTime => prevTime + 1);
-      }, 1000);
-
-      // 每次时间更新时保存状态
-      saveIntervalId = setInterval(saveState, 1000);
-    }
-
-    // 组件卸载或状态变化时保存
-    const handleBeforeUnload = async () => {
-      console.log('Window unloading, saving final state...');
-      await saveState();
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-      if (saveIntervalId) clearInterval(saveIntervalId);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      // 确保在组件卸载时保存最终状态
-      saveState();
-    };
-  }, [isRunning, time]); // 添加time作为依赖项
-
   const handleStartStop = async () => {
-    const newIsRunning = !isRunning;
-    console.log(`Timer ${newIsRunning ? 'started' : 'stopped'}`);
-    setIsRunning(newIsRunning);
-    await saveState();
+    const newIsRunning = await startStop();
+    
+    if (!newIsRunning && time > 0) {
+      const newRecord: TimerRecord = {
+        id: Date.now().toString(),
+        date: new Date().toLocaleDateString(),
+        title,
+        time,
+        earned,
+        customer
+      };
+      const updatedRecords = [newRecord, ...records];
+      setRecords(updatedRecords);
+      await storageUtils.saveTimerRecords(updatedRecords);
+    }
   };
 
-  const handleReset = async () => {
-    console.log('Resetting timer...');
-    setIsRunning(false);
-    setTime(0);
-    await storageUtils.clearTimerState();
-    console.log('Timer reset complete');
+  const handleEditTitle = () => {
+    const newTitle = prompt('Enter new title:', title);
+    if (newTitle) setTitle(newTitle);
+  };
+
+  const handleEditEarned = () => {
+    const newEarned = prompt('Enter new earned amount:', earned);
+    if (newEarned) setEarned(newEarned);
+  };
+
+  const handleEditCustomer = () => {
+    const newCustomer = prompt('Enter new customer name:', customer);
+    if (newCustomer) setCustomer(newCustomer);
   };
 
   return (
-    <div className="app-container">
-      <h1>Time Tracker</h1>
-      <TimerDisplay time={time} />
-      <TimerControls
-        isRunning={isRunning}
-        onStartStop={handleStartStop}
-        onReset={handleReset}
-      />
-    </div>
+    <Container maxWidth="sm">
+      <Paper elevation={3} sx={{ mt: 4, p: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+          <IconButton color="primary">
+            <NotificationsOutlined />
+          </IconButton>
+          <IconButton color="primary">
+            <Refresh />
+          </IconButton>
+        </Box>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h5" component="h1" sx={{ flexGrow: 1 }}>
+            {title}
+          </Typography>
+          <IconButton size="small" onClick={handleEditTitle}>
+            <Edit />
+          </IconButton>
+        </Box>
+
+        <TimerDisplay time={time} />
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Paper variant="outlined" sx={{ p: 2, flexGrow: 1, mr: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, alignItems: 'center' }}>
+              <Typography color="text.secondary">Earned</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography>{earned}</Typography>
+                <IconButton size="small" onClick={handleEditEarned}>
+                  <Edit fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography color="text.secondary">Customer</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography>{customer}</Typography>
+                <IconButton size="small" onClick={handleEditCustomer}>
+                  <Edit fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
+          </Paper>
+
+          <TimerControls
+            isRunning={isRunning}
+            onStartStop={handleStartStop}
+            onReset={reset}
+          />
+        </Box>
+
+        <List sx={{ mt: 3 }}>
+          {records.map(record => (
+            <ListItem
+              key={record.id}
+              divider
+              sx={{ display: 'flex', justifyContent: 'space-between' }}
+            >
+              <ListItemText
+                primary={record.title}
+                secondary={record.date}
+              />
+              <Typography>
+                {Math.floor(record.time / 60)}:{String(record.time % 60).padStart(2, '0')}
+              </Typography>
+            </ListItem>
+          ))}
+        </List>
+      </Paper>
+    </Container>
   );
 };
 

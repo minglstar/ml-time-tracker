@@ -2,9 +2,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import webExtension from '@samrum/vite-plugin-web-extension';
 import manifest from './manifest';
-import { resolve } from 'path';
 
 export default defineConfig({
+  base: './',
   plugins: [
     react(),
     webExtension({ 
@@ -19,15 +19,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        popup: 'public/popup.html',
-      },
-    },
-  },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src'),
-    },
+    watch: process.env.NODE_ENV === 'development' ? {} : null,
+    sourcemap: true, // 启用 sourcemap 用于断点调试
   },
 });

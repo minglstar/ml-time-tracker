@@ -1,3 +1,5 @@
+import { TimerRecord } from '../types/types';
+
 export interface TimerState {
     isRunning: boolean;
     time: number;
@@ -16,5 +18,14 @@ export const storageUtils = {
 
     async clearTimerState(): Promise<void> {
         await chrome.storage.local.remove('timerState');
+    },
+
+    async saveTimerRecords(records: TimerRecord[]): Promise<void> {
+        await chrome.storage.local.set({ timerRecords: records });
+    },
+
+    async getTimerRecords(): Promise<TimerRecord[]> {
+        const result = await chrome.storage.local.get('timerRecords');
+        return result.timerRecords || [];
     }
 };
