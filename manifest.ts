@@ -17,7 +17,7 @@ const manifest = {
     permissions: ['storage', 'alarms', 'notifications'],
     host_permissions: ['<all_urls>', "https://api.com/*"],
     background: {
-        service_worker: 'background.js', // background.js 与 manifest.ts 在同一目录
+        service_worker: 'background.js',
         type: 'module',
     },
     content_security_policy: {

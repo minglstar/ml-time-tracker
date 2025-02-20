@@ -22,5 +22,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "manifest.ts"]
+  "include": ["src", "manifest.ts", "background.ts"]
 }
