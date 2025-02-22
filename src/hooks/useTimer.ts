@@ -5,6 +5,7 @@ import { TimerState } from '../types/types';
 export const useTimer = () => {
     const [isRunning, setIsRunning] = useState(false);
     const [time, setTime] = useState(0);
+    const [startTime, setStartTime] = useState<number | null>(null);
     const isRunningRef = useRef(isRunning);
     const timeRef = useRef(time);
 
@@ -68,6 +69,11 @@ export const useTimer = () => {
         const newIsRunning = !isRunningRef.current;
         isRunningRef.current = newIsRunning;
         setIsRunning(newIsRunning);
+        
+        if (newIsRunning) {
+            setStartTime(new Date().getTime());
+        }
+        
         await saveState();
         return newIsRunning;
     };
@@ -77,8 +83,9 @@ export const useTimer = () => {
         timeRef.current = 0;
         setIsRunning(false);
         setTime(0);
+        setStartTime(null);
         await saveState();
     };
 
-    return { isRunning, time, startStop, reset };
+    return { isRunning, time, startStop, reset, startTime };
 };

@@ -17,8 +17,6 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ time }) => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 padding: 3,
-                backgroundColor: 'primary.main',
-                borderRadius: 2,
                 margin: 2
             }}
         >
@@ -27,7 +25,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ time }) => {
                 component="div"
                 sx={{
                     fontWeight: 'bold',
-                    color: 'white',
+                    color: 'text.primary',
                     fontFamily: 'monospace'
                 }}
             >

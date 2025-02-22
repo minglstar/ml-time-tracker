@@ -1,75 +1,64 @@
-import React from 'react';
-import { List, ListItem, ListItemText, Divider, Box, Typography, IconButton } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { TimerRecord } from '../../types/types';
+import React, { useState } from 'react';
+import { Box } from '@mui/material';
+import { TimerRecord, Project } from '../../types/types';
+import RecordMenu from './RecordMenu';
+// 移除未使用的 RecordCard 导入
+import DateGroup from './DateGroup';
+import { formatTime, groupRecordsByDate } from '../../utils/utils';
 
 interface TrackingRecordsProps {
   records: TimerRecord[];
   onDeleteRecord: (id: string) => void;
+  onContinueRecord?: (record: TimerRecord) => void;
+  projects?: Project[];
 }
 
-const TrackingRecords: React.FC<TrackingRecordsProps> = ({ records, onDeleteRecord }) => {
-  const formatTime = (time: number) => {
-    const hours = Math.floor(time / 3600);
-    const minutes = Math.floor((time % 3600) / 60);
-    const seconds = time % 60;
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+
+const TrackingRecords: React.FC<TrackingRecordsProps> = ({ records, onDeleteRecord, onContinueRecord, projects }) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedRecord, setSelectedRecord] = useState<TimerRecord | null>(null);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, record: TimerRecord) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedRecord(record);
   };
 
-  const groupRecordsByDate = (records: TimerRecord[]) => {
-    const groups: { [key: string]: TimerRecord[] } = {};
-    records.forEach(record => {
-      if (!groups[record.date]) {
-        groups[record.date] = [];
-      }
-      groups[record.date].push(record);
-    });
-    return groups;
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedRecord(null);
   };
 
-  const calculateDailyTotal = (records: TimerRecord[]) => {
-    return records.reduce((total, record) => total + record.time, 0);
+  const handleContinue = () => {
+    if (selectedRecord && onContinueRecord) {
+      onContinueRecord(selectedRecord);
+    }
+    handleMenuClose();
   };
+
+
 
   return (
-    <List sx={{ mt: 3 }}>
+    <Box sx={{ mt: 3 }}>
       {Object.entries(groupRecordsByDate(records)).map(([date, dateRecords]) => (
-        <React.Fragment key={date}>
-          <ListItem sx={{ bgcolor: 'grey.100' }}>
-            <ListItemText
-              primary={date}
-              secondary={`总时间: ${formatTime(calculateDailyTotal(dateRecords))}`}
-            />
-          </ListItem>
-          <Divider />
-          {dateRecords.map(record => (
-            <ListItem
-              key={record.id}
-              divider
-              sx={{ display: 'flex', justifyContent: 'space-between' }}
-            >
-              <ListItemText
-                primary={record.title}
-                secondary={`${record.customer ? `客户: ${record.customer}` : ''} ${record.earned ? `收入: ${record.earned}` : ''}`}
-              />
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography>
-                  {formatTime(record.time)}
-                </Typography>
-                <IconButton
-                  edge="end"
-                  aria-label="delete"
-                  onClick={() => onDeleteRecord(record.id)}
-                  size="small"
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </Box>
-            </ListItem>
-          ))}
-        </React.Fragment>
+        <DateGroup
+          key={date}
+          date={date}
+          records={dateRecords}
+          formatTime={formatTime}
+          onMenuClick={handleMenuClick}
+          onMenuClose={handleMenuClose}
+          projects={projects}
+        />
       ))}
-    </List>
+      <RecordMenu
+        anchorEl={anchorEl}
+        selectedRecord={selectedRecord}
+        onClose={handleMenuClose}
+        onContinue={handleContinue}
+        onDelete={onDeleteRecord}
+      />
+    </Box>
   );
 };
 

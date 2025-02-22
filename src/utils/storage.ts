@@ -1,4 +1,4 @@
-import { TimerRecord } from '../types/types';
+import { TimerRecord, Project } from '../types/types';
 
 export interface TimerState {
     isRunning: boolean;
@@ -27,5 +27,14 @@ export const storageUtils = {
     async getTimerRecords(): Promise<TimerRecord[]> {
         const result = await chrome.storage.local.get('timerRecords');
         return result.timerRecords || [];
+    },
+
+    async saveProjects(projects: Project[]): Promise<void> {
+        await chrome.storage.local.set({ projects: projects });
+    },
+
+    async getProjects(): Promise<Project[]> {
+        const result = await chrome.storage.local.get('projects');
+        return result.projects || [];
     }
 };
