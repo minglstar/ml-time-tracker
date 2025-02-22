@@ -1,84 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Box, Container, Paper } from '@mui/material';
 import HeaderControls from './components/common/HeaderControls';
 import TaskInfoEditor from './components/common/TaskInfoEditor';
 import TrackingRecords from './components/tracking/TrackingRecords';
 import TimerDisplay from './components/timer/TimerDisplay';
 import TimerControls from './components/timer/TimerControls';
-import { useTimer } from './hooks/useTimer';
-import { TimerRecord, Project } from './types/types';
-import { storageUtils } from './utils/storage';
-import { generateId } from './utils/idGenerator';
+// 找不到模块“./store/timerStore”或其相应的类型声明，可能是路径错误或模块未导出
+import { useTimerStore } from './store/timerStore';
+import { useTaskStore } from './store/taskStore';
+import { useProjectStore } from './store/projectStore';
+import { useRecordStore } from './store/recordStore';
+import { TimerRecord } from './types/types';
 import './App.css';
 
 const App: React.FC = () => {
-  const { isRunning, time, startStop, reset, startTime } = useTimer();
-  const [title, setTitle] = useState('');
-  const [selectedProject, setSelectedProject] = useState('');
-  const [records, setRecords] = useState<TimerRecord[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const { isRunning, time, startStop, reset } = useTimerStore();
+  const { title, selectedProject, setTitle, setSelectedProject } = useTaskStore();
+  const { projects, loadProjects } = useProjectStore();
+  const { records, saveRecord, deleteRecord, continueRecord, loadRecords } = useRecordStore();
 
   useEffect(() => {
-    const loadRecords = async () => {
-      const savedRecords = await storageUtils.getTimerRecords();
-      setRecords(savedRecords);
-    };
     loadRecords();
-  }, []);
-
-  useEffect(() => {
-    const loadProjects = async () => {
-      const savedProjects = await storageUtils.getProjects();
-      setProjects(savedProjects);
-    };
     loadProjects();
   }, []);
 
   const handleStartStop = async () => {
     const newIsRunning = await startStop();
-    
     if (!newIsRunning && time > 0) {
-      const currentDate = new Date().toLocaleDateString();
-      const endTime = new Date().getTime();
-      const newTimeSegment = {
-        startTime: startTime || endTime - (time * 1000),
-        endTime,
-        duration: time
-      };
-
-      const existingRecord = records.find(record => 
-        record.title === title && 
-        record.date === currentDate
-      );
-      
-      if (existingRecord) {
-        const updatedRecords = records.map(record => {
-          if (record.id === existingRecord.id) {
-            return {
-              ...record,
-              time: record.time + time,
-              timeSegments: [...(record.timeSegments || []), newTimeSegment],
-              projectId: selectedProject || record.projectId
-            };
-          }
-          return record;
-        });
-        setRecords(updatedRecords);
-        await storageUtils.saveTimerRecords(updatedRecords);
-      } else {
-        const newRecord: TimerRecord = {
-          id: generateId(),
-          date: currentDate,
-          title,
-          time,
-          timeSegments: [newTimeSegment],
-          projectId: selectedProject || undefined
-        };
-        const updatedRecords = [newRecord, ...records];
-        setRecords(updatedRecords);
-        await storageUtils.saveTimerRecords(updatedRecords);
-      }
-      
+      await saveRecord(title, time, selectedProject);
       reset();
       setTitle('');
       setSelectedProject('');
@@ -90,16 +39,11 @@ const App: React.FC = () => {
   };
 
   const handleDeleteRecord = async (id: string) => {
-    const updatedRecords = records.filter(record => record.id !== id);
-    setRecords(updatedRecords);
-    await storageUtils.saveTimerRecords(updatedRecords);
+    await deleteRecord(id);
   };
 
   const handleContinueRecord = (record: TimerRecord) => {
-    setTitle(record.title);
-    setSelectedProject(record.projectId || '');
-    reset();
-    startStop();
+    continueRecord(record);
   };
 
   return (
