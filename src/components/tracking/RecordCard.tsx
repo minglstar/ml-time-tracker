@@ -43,8 +43,12 @@ const RecordCard: React.FC<RecordCardProps> = ({ record, onMenuClick, formatTime
           {record.title}
         </Typography>
         {record.projectId && projects && (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                      {projects.find(p => p.id === record.projectId)?.name}
+          <Typography variant="body2" sx={{ 
+            mb: 1,
+            color: projects?.find(p => p.id === record.projectId)?.color || 'text.secondary',
+            fontWeight: 'bold'
+          }}>
+            {projects?.find(p => p.id === record.projectId)?.name}
           </Typography>
         )}
         

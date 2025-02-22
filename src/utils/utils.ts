@@ -9,11 +9,19 @@ export const formatTime = (time: number): string => {
 
 export const groupRecordsByDate = (records: TimerRecord[]): { [key: string]: TimerRecord[] } => {
   const groups: { [key: string]: TimerRecord[] } = {};
-  records.forEach(record => {
+  
+  // 按日期降序排序记录
+  const sortedRecords = [...records].sort((a, b) => {
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
+
+  // 分组记录
+  sortedRecords.forEach(record => {
     if (!groups[record.date]) {
       groups[record.date] = [];
     }
     groups[record.date].push(record);
   });
+
   return groups;
 };

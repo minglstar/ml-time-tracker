@@ -78,12 +78,16 @@ const TaskInfoEditor: React.FC<TaskInfoEditorProps> = ({
             }}
             renderValue={(value) => {
               const project = projects.find(p => p.id === value);
-              return project ? project.name : '';
+              return project ? (
+                <span style={{ color: project.color, fontWeight: 'bold' }}>
+                  {project.name}
+                </span>
+              ) : '';
             }}
           >
             {projects.map((project) => (
               <MenuItem key={project.id} value={project.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>{project.name}</span>
+                <span style={{ color: project.color, fontWeight: 'bold' }}>{project.name}</span>
                 <IconButton
                   size="small"
                   onClick={(e) => {

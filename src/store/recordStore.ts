@@ -23,8 +23,23 @@ export const useRecordStore = create<RecordStore>((set, get) => ({
   // 记录操作
   saveRecord: async (title: string, time: number, projectId: string) => {
     const trimmedTitle = title.trim() || '未命名任务';
-    const currentDate = new Date().toISOString().split('T')[0];
-    const currentTime = Date.now();
+    // 使用本地时间获取时间戳
+    const now = new Date();
+    const currentTime = now.getTime();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const currentDate = `${year}-${month}-${day}`;
+    
+    // 验证日期转换是否正确
+    console.log('当前时间戳:', currentTime);
+    console.log('转换后的日期:', currentDate);
+    const expectedDate = '2025-02-23';
+    if (currentDate !== expectedDate) {
+      console.error('日期转换错误！');
+      console.error(`期望日期: ${expectedDate}，实际日期: ${currentDate}`);
+      throw new Error('日期转换错误，请检查系统时间设置');
+    }
     
     // 查找当天是否存在相同标题和项目的记录
     const existingRecord = get().records.find(record => 
