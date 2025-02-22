@@ -6,7 +6,8 @@ interface TimerDisplayProps {
 }
 
 const TimerDisplay: React.FC<TimerDisplayProps> = ({ time }) => {
-    const minutes = Math.floor(time / 60);
+    const hours = Math.floor(time / 3600);
+    const minutes = Math.floor((time % 3600) / 60);
     const seconds = time % 60;
 
     return (
@@ -30,7 +31,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({ time }) => {
                     fontFamily: 'monospace'
                 }}
             >
-                {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+                {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
             </Typography>
         </Box>
     );

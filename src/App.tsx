@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, IconButton, Paper, Typography, List, ListItem, ListItemText } from '@mui/material';
-import { NotificationsOutlined, Refresh, Edit } from '@mui/icons-material';
-import TimerDisplay from './components/TimerDisplay';
-import TimerControls from './components/TimerControls';
+import { Box, Container, Paper } from '@mui/material';
+import HeaderControls from './components/common/HeaderControls';
+import TaskInfoEditor from './components/common/TaskInfoEditor';
+import TrackingRecords from './components/tracking/TrackingRecords';
+import TimerDisplay from './components/timer/TimerDisplay';
+import TimerControls from './components/timer/TimerControls';
 import { useTimer } from './hooks/useTimer';
 import { TimerRecord } from './types/types';
 import { storageUtils } from './utils/storage';
@@ -38,6 +40,12 @@ const App: React.FC = () => {
       const updatedRecords = [newRecord, ...records];
       setRecords(updatedRecords);
       await storageUtils.saveTimerRecords(updatedRecords);
+      
+      // Reset timer and clear task info
+      reset();
+      setTitle('');
+      setEarned('');
+      setCustomer('');
     }
   };
 
@@ -56,51 +64,29 @@ const App: React.FC = () => {
     if (newCustomer) setCustomer(newCustomer);
   };
 
+  const handleDeleteRecord = async (id: string) => {
+    const updatedRecords = records.filter(record => record.id !== id);
+    setRecords(updatedRecords);
+    await storageUtils.saveTimerRecords(updatedRecords);
+  };
+
   return (
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ mt: 4, p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-          <IconButton color="primary">
-            <NotificationsOutlined />
-          </IconButton>
-          <IconButton color="primary">
-            <Refresh />
-          </IconButton>
-        </Box>
+        <HeaderControls />
 
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h5" component="h1" sx={{ flexGrow: 1 }}>
-            {title}
-          </Typography>
-          <IconButton size="small" onClick={handleEditTitle}>
-            <Edit />
-          </IconButton>
-        </Box>
+        <TaskInfoEditor
+          title={title}
+          earned={earned}
+          customer={customer}
+          onEditTitle={handleEditTitle}
+          onEditEarned={handleEditEarned}
+          onEditCustomer={handleEditCustomer}
+        />
 
         <TimerDisplay time={time} />
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Paper variant="outlined" sx={{ p: 2, flexGrow: 1, mr: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, alignItems: 'center' }}>
-              <Typography color="text.secondary">Earned</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Typography>{earned}</Typography>
-                <IconButton size="small" onClick={handleEditEarned}>
-                  <Edit fontSize="small" />
-                </IconButton>
-              </Box>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography color="text.secondary">Customer</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Typography>{customer}</Typography>
-                <IconButton size="small" onClick={handleEditCustomer}>
-                  <Edit fontSize="small" />
-                </IconButton>
-              </Box>
-            </Box>
-          </Paper>
-
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3, mt: -2 }}>
           <TimerControls
             isRunning={isRunning}
             onStartStop={handleStartStop}
@@ -108,23 +94,7 @@ const App: React.FC = () => {
           />
         </Box>
 
-        <List sx={{ mt: 3 }}>
-          {records.map(record => (
-            <ListItem
-              key={record.id}
-              divider
-              sx={{ display: 'flex', justifyContent: 'space-between' }}
-            >
-              <ListItemText
-                primary={record.title}
-                secondary={record.date}
-              />
-              <Typography>
-                {Math.floor(record.time / 60)}:{String(record.time % 60).padStart(2, '0')}
-              </Typography>
-            </ListItem>
-          ))}
-        </List>
+        <TrackingRecords records={records} onDeleteRecord={handleDeleteRecord} />
       </Paper>
     </Container>
   );

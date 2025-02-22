@@ -22,11 +22,12 @@ const TimerControls: React.FC<TimerControlsProps> = ({ isRunning, onStartStop })
                 sx={{
                     backgroundColor: isRunning ? 'error.main' : 'success.main',
                     color: 'white',
-                    width: 56,
-                    height: 56,
+                    width: 64,
+                    height: 64,
                     '&:hover': {
                         backgroundColor: isRunning ? 'error.dark' : 'success.dark',
-                    }
+                    },
+                    margin: 1
                 }}
             >
                 {isRunning ? <Stop /> : <PlayArrow />}
