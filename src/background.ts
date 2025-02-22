@@ -11,7 +11,7 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 });
 
 // 处理来自popup或content script的消息
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     if (request.action === 'getData') {
         chrome.storage.sync.get(['key'], (result) => {
             sendResponse({ data: result.key });

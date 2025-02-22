@@ -2,32 +2,170 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 150px;
-  width: 250px;
-  padding: 10px;
+  width: 300px;
+  height: 500px;
+  padding: 20px;
   font-family: Arial, sans-serif;
-  background-color: #f9f9f9;
+  background-color: #ffffff;
+}
+
+.header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.notification-icon {
+  font-size: 20px;
+  color: #666;
+  cursor: pointer;
+}
+
+.refresh-icon {
+  font-size: 20px;
+  color: #666;
+  cursor: pointer;
+}
+
+.task-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.edit-icon {
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
 }
 
 .timer-display {
-  font-size: 24px;
+  font-size: 48px;
+  font-weight: bold;
+  margin: 20px 0;
+  color: #333;
+}
+
+.task-info {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 10px;
+}
+
+.info-label {
+  color: #666;
+}
+
+.info-value {
+  font-weight: bold;
+  color: #333;
 }
 
 .button-container {
   display: flex;
   gap: 10px;
+  margin-bottom: 20px;
 }
 
 button {
-  padding: 5px 10px;
+  padding: 8px 16px;
   border: none;
-  background-color: #007bff;
-  color: white;
+  border-radius: 4px;
+  font-weight: bold;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.start-button {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.stop-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.reset-button {
+  background-color: #9e9e9e;
+  color: white;
 }
 
 button:hover {
-  background-color: #0056b3;
+  opacity: 0.9;
+}
+
+.records-container {
+  width: 100%;
+  flex-grow: 1;
+  overflow-y: auto;
+  border-top: 1px solid #eee;
+}
+
+.record-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.record-info {
+  flex-grow: 1;
+}
+
+.record-date {
+  color: #666;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.record-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.record-time {
+  color: #333;
+  font-weight: bold;
+}
+
+.record-alarm {
+  color: #f44336;
+  margin-left: 10px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
 }

@@ -4,18 +4,22 @@ import webExtension from '@samrum/vite-plugin-web-extension';
 import manifest from './manifest';
 
 export default defineConfig({
+  base: './',
   plugins: [
     react(),
-    webExtension({ manifest }),
+    webExtension({ 
+      manifest,
+      webExtConfig: {
+        background: {
+          entry: 'src/background.ts',
+        },
+      },
+    }),
   ],
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        popup: 'public/popup.html',
-        background: './src/background.ts'
-      },
-    },
+    watch: process.env.NODE_ENV === 'development' ? {} : null,
+    sourcemap: true, // 启用 sourcemap 用于断点调试
   },
 });
