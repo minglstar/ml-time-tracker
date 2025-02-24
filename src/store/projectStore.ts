@@ -30,9 +30,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   },
 
   updateProject: async (project: Project) => {
-    const projects = get().projects.map(p =>
-      p.id === project.id ? project : p
-    );
+    const projects = get().projects.map(p => (p.id === project.id ? project : p));
     set({ projects });
     await storageUtils.saveProjects(projects);
   },
@@ -41,5 +39,5 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     const projects = get().projects.filter(p => p.id !== id);
     set({ projects });
     await storageUtils.saveProjects(projects);
-  }
+  },
 }));

@@ -17,7 +17,19 @@ const RecordMenu: React.FC<RecordMenuProps> = ({
   onContinue,
   onDelete,
 }) => (
-  <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onClose}>
+  <Menu
+    anchorEl={anchorEl}
+    open={Boolean(anchorEl)}
+    onClose={onClose}
+    disableScrollLock
+    PaperProps={{
+      sx: {
+        mt: 1,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        minWidth: 120,
+      },
+    }}
+  >
     <MenuItem onClick={onContinue}>继续计时</MenuItem>
     <MenuItem
       onClick={() => {

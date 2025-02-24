@@ -7,6 +7,8 @@
   padding: 20px;
   font-family: Arial, sans-serif;
   background-color: #ffffff;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
 }
 
 .header {

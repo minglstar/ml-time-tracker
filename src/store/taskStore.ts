@@ -11,7 +11,7 @@ interface TaskStore {
   clearTask: () => void;
 }
 
-export const useTaskStore = create<TaskStore>((set) => ({
+export const useTaskStore = create<TaskStore>(set => ({
   // 初始状态
   title: '',
   selectedProject: '',
@@ -19,5 +19,5 @@ export const useTaskStore = create<TaskStore>((set) => ({
   // 任务操作
   setTitle: (title: string) => set({ title }),
   setSelectedProject: (projectId: string) => set({ selectedProject: projectId }),
-  clearTask: () => set({ title: '', selectedProject: '' })
+  clearTask: () => set({ title: '', selectedProject: '' }),
 }));

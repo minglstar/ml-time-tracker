@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, Container, Paper } from '@mui/material';
+import { Box, Container, ThemeProvider, createTheme } from '@mui/material';
 import HeaderControls from './components/common/HeaderControls';
 import TaskInfoEditor from './components/common/TaskInfoEditor';
 import TrackingRecords from './components/tracking/TrackingRecords';
@@ -11,6 +11,35 @@ import { useProjectStore } from './store/projectStore';
 import { useRecordStore } from './store/recordStore';
 import { TimerRecord } from './types/types';
 import './App.css';
+
+const theme = createTheme({
+  components: {
+    MuiDialog: {
+      defaultProps: {
+        disableScrollLock: true,
+      },
+      styleOverrides: {
+        paper: {
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          borderRadius: 8,
+        },
+      },
+    },
+    MuiSelect: {
+      defaultProps: {
+        MenuProps: {
+          disableScrollLock: true,
+          PaperProps: {
+            sx: {
+              mt: 1,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            },
+          },
+        },
+      },
+    },
+  },
+});
 
 const App: React.FC = () => {
   const { isRunning, time, startStop } = useTimerStore();
@@ -49,33 +78,35 @@ const App: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ p: 0 }}>
-      <Paper elevation={3} sx={{ minHeight: '100vh', p: 3, borderRadius: 0 }}>
-        <HeaderControls />
+    <ThemeProvider theme={theme}>
+      <Container maxWidth="sm" sx={{ p: 0, minHeight: '100vh', bgcolor: 'transparent' }}>
+        <Box sx={{ p: 3, bgcolor: 'white', minHeight: '100vh' }}>
+          <HeaderControls />
 
-        <TaskInfoEditor
-          title={title}
-          selectedProject={selectedProject}
-          onEditTitle={handleEditTitle}
-          onSelectProject={setSelectedProject}
-        />
+          <TaskInfoEditor
+            title={title}
+            selectedProject={selectedProject}
+            onEditTitle={handleEditTitle}
+            onSelectProject={setSelectedProject}
+          />
 
-        <TimerDisplay time={time} />
+          <TimerDisplay time={time} />
 
-        <Box
-          sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3, mt: -2 }}
-        >
-          <TimerControls isRunning={isRunning} onStartStop={handleStartStop} />
+          <Box
+            sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3, mt: -2 }}
+          >
+            <TimerControls isRunning={isRunning} onStartStop={handleStartStop} />
+          </Box>
+
+          <TrackingRecords
+            records={records}
+            onDeleteRecord={handleDeleteRecord}
+            onContinueRecord={handleContinueRecord}
+            projects={projects}
+          />
         </Box>
-
-        <TrackingRecords
-          records={records}
-          onDeleteRecord={handleDeleteRecord}
-          onContinueRecord={handleContinueRecord}
-          projects={projects}
-        />
-      </Paper>
-    </Container>
+      </Container>
+    </ThemeProvider>
   );
 };
 

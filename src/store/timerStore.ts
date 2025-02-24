@@ -44,7 +44,7 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
       const { intervalId } = get();
       if (intervalId) {
         clearInterval(intervalId);
-        set({ intervalId: null });
+        set({ intervalId: null, time: 0 });
       }
     }
 
@@ -52,7 +52,7 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
     const state: TimerState = {
       isRunning: newIsRunning,
       time,
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     };
     await storageUtils.saveTimerState(state);
 
@@ -68,10 +68,10 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
     const state: TimerState = {
       isRunning: false,
       time: 0,
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     };
     await storageUtils.saveTimerState(state);
   },
 
-  setTime: (time: number) => set({ time })
+  setTime: (time: number) => set({ time }),
 }));

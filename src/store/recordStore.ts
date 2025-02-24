@@ -30,22 +30,13 @@ export const useRecordStore = create<RecordStore>((set, get) => ({
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     const currentDate = `${year}-${month}-${day}`;
-    
-    // 验证日期转换是否正确
-    console.log('当前时间戳:', currentTime);
-    console.log('转换后的日期:', currentDate);
-    const expectedDate = '2025-02-23';
-    if (currentDate !== expectedDate) {
-      console.error('日期转换错误！');
-      console.error(`期望日期: ${expectedDate}，实际日期: ${currentDate}`);
-      throw new Error('日期转换错误，请检查系统时间设置');
-    }
-    
+
     // 查找当天是否存在相同标题和项目的记录
-    const existingRecord = get().records.find(record => 
-      record.date === currentDate && 
-      record.title === trimmedTitle && 
-      record.projectId === projectId
+    const existingRecord = get().records.find(
+      record =>
+        record.date === currentDate &&
+        record.title === trimmedTitle &&
+        record.projectId === projectId
     );
 
     if (existingRecord) {
@@ -58,9 +49,9 @@ export const useRecordStore = create<RecordStore>((set, get) => ({
           {
             startTime: currentTime - time * 1000,
             endTime: currentTime,
-            duration: time
-          }
-        ]
+            duration: time,
+          },
+        ],
       };
 
       const records = get().records.map(record =>
@@ -75,12 +66,14 @@ export const useRecordStore = create<RecordStore>((set, get) => ({
         title: trimmedTitle,
         time,
         date: currentDate,
-        timeSegments: [{
-          startTime: currentTime - time * 1000,
-          endTime: currentTime,
-          duration: time
-        }],
-        projectId
+        timeSegments: [
+          {
+            startTime: currentTime - time * 1000,
+            endTime: currentTime,
+            duration: time,
+          },
+        ],
+        projectId,
       };
 
       const records = [...get().records, newRecord];
@@ -101,16 +94,16 @@ export const useRecordStore = create<RecordStore>((set, get) => ({
 
     // 设置任务信息
     taskStore.setTitle(record.title);
-    taskStore.setSelectedProject(record.projectId || '');
+    taskStore.setSelectedProject(record.projectId ?? '');
 
     // 重置并启动计时器
-    timerStore.reset().then(() => {
-      timerStore.startStop();
+    void timerStore.reset().then(() => {
+      void timerStore.startStop();
     });
   },
 
   loadRecords: async () => {
     const records = await storageUtils.getTimerRecords();
     set({ records });
-  }
+  },
 }));

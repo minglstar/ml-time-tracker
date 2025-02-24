@@ -103,11 +103,20 @@ const TaskInfoEditor: React.FC<TaskInfoEditorProps> = ({
           onChange={e => onEditTitle(e.target.value)}
           size="small"
         />
-        <FormControl sx={{ minWidth: 200 }} size="small">
+        <FormControl sx={{ minWidth: 200, position: 'relative' }} size="small">
           <InputLabel>选择项目</InputLabel>
           <Select
             value={localSelectedProject}
             label="选择项目"
+            MenuProps={{
+              disableScrollLock: true,
+              PaperProps: {
+                sx: {
+                  mt: 1,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                },
+              },
+            }}
             onChange={e => {
               const value = e.target.value;
               setLocalSelectedProject(value);
@@ -155,7 +164,17 @@ const TaskInfoEditor: React.FC<TaskInfoEditorProps> = ({
         </FormControl>
       </Box>
 
-      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)} disableScrollLock>
+      <Dialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        disableScrollLock
+        PaperProps={{
+          sx: {
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            borderRadius: 2,
+          },
+        }}
+      >
         <DialogTitle>创建新项目</DialogTitle>
         <DialogContent>
           <TextField
