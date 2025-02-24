@@ -1,77 +1,75 @@
 import { create } from 'zustand';
 import { TimerState } from '../types/types';
-import { storageUtils } from '../utils/storage';
+import { messageService } from '../utils/messageService';
 
 interface TimerStore {
   // 计时器状态
   isRunning: boolean;
   time: number;
-  startTime: number | null;
-  intervalId: NodeJS.Timeout | null;
+  lastUpdated: number;
 
   // 操作方法
-  startStop: () => Promise<boolean>;
+  startStop: () => Promise<void>;
   reset: () => Promise<void>;
   setTime: (time: number) => void;
+  initState: () => Promise<void>;
 }
 
 export const useTimerStore = create<TimerStore>((set, get) => ({
   // 初始状态
   isRunning: false,
   time: 0,
-  startTime: null,
-  intervalId: null,
+  lastUpdated: Date.now(),
+
+  // 初始化状态
+  initState: async () => {
+    try {
+      const state = await messageService.sendToBackground<TimerState>({
+        type: 'REQUEST_TIMER_STATE',
+        data: undefined,
+      });
+      set(state);
+    } catch (error) {
+      console.error('Failed to initialize timer state:', error);
+    }
+  },
 
   // 计时器控制
   startStop: async () => {
-    const { isRunning, time } = get();
-    const newIsRunning = !isRunning;
-    const newStartTime = newIsRunning ? Date.now() : null;
-
-    set({ isRunning: newIsRunning, startTime: newStartTime });
-
-    // 启动或停止计时器
-    if (newIsRunning) {
-      const intervalId = setInterval(() => {
-        const { startTime } = get();
-        if (startTime) {
-          const currentTime = Math.floor((Date.now() - startTime) / 1000);
-          set({ time: currentTime });
-        }
-      }, 1000);
-      set({ intervalId });
-    } else {
-      const { intervalId } = get();
-      if (intervalId) {
-        clearInterval(intervalId);
-        set({ intervalId: null, time: 0 });
-      }
-    }
-
-    // 保存计时器状态
-    const state: TimerState = {
-      isRunning: newIsRunning,
-      time,
-      lastUpdated: Date.now(),
-    };
-    await storageUtils.saveTimerState(state);
-
-    return newIsRunning;
+    const state = await messageService.sendToBackground<TimerState>({
+      type: 'TIMER_UPDATE',
+      data: {
+        isRunning: !get().isRunning,
+        time: get().time,
+        lastUpdated: Date.now(),
+      },
+    });
+    set(state);
   },
 
   reset: async () => {
-    const { intervalId } = get();
-    if (intervalId) {
-      clearInterval(intervalId);
-    }
-    set({ isRunning: false, time: 0, startTime: null, intervalId: null });
-    const state: TimerState = {
-      isRunning: false,
-      time: 0,
-      lastUpdated: Date.now(),
-    };
-    await storageUtils.saveTimerState(state);
+    const state = await messageService.sendToBackground<TimerState>({
+      type: 'TIMER_UPDATE',
+      data: {
+        isRunning: false,
+        time: 0,
+        lastUpdated: Date.now(),
+      },
+    });
+    set(state);
   },
 
   setTime: (time: number) => set({ time }),
 }));
+
+// 监听来自background的消息以更新状态
+messageService.listenFromBackground(message => {
+  if (message.type === 'TIMER_UPDATE' && message.data) {
+    // 确保更新最新的计时器状态
+    useTimerStore.setState({
+      isRunning: message.data.isRunning,
+      time: message.data.time,
+      lastUpdated: message.data.lastUpdated
+    });
+  }
+});

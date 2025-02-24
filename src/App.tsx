@@ -42,17 +42,19 @@ const theme = createTheme({
 });
 
 const App: React.FC = () => {
-  const { isRunning, time, startStop } = useTimerStore();
-  const { title, selectedProject, setTitle, setSelectedProject } = useTaskStore();
+  const { isRunning, time, startStop, initState } = useTimerStore();
+  const { title, selectedProject, setTitle, setSelectedProject, loadTask } = useTaskStore();
   const { projects, loadProjects } = useProjectStore();
   const { records, saveRecord, deleteRecord, continueRecord, loadRecords } = useRecordStore();
 
   useEffect(() => {
     void Promise.all([
+      initState().catch(error => console.error('初始化计时器状态失败:', error)),
       loadRecords().catch(error => console.error('加载记录失败:', error)),
       loadProjects().catch(error => console.error('加载项目失败:', error)),
+      loadTask().catch(error => console.error('加载任务信息失败:', error)),
     ]);
-  }, [loadProjects, loadRecords]);
+  }, [initState, loadProjects, loadRecords, loadTask]);
 
   const handleStartStop = () => {
     void (async () => {
