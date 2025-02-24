@@ -5,5 +5,5 @@ import { v4 as uuidv4 } from 'uuid';
  * @returns 返回一个UUID v4格式的字符串
  */
 export const generateId = (): string => {
-    return uuidv4();
+  return uuidv4();
 };

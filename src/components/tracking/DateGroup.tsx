@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Typography, Box } from '@mui/material';
+import { Typography, Box, Grid } from '@mui/material';
 import { TimerRecord, Project } from '../../types/types';
 import RecordCard from './RecordCard';
 
@@ -12,7 +12,13 @@ interface DateGroupProps {
   projects?: Project[];
 }
 
-const DateGroup: React.FC<DateGroupProps> = ({ date, records, formatTime, onMenuClick, projects }) => {
+const DateGroup: React.FC<DateGroupProps> = ({
+  date,
+  records,
+  formatTime,
+  onMenuClick,
+  projects,
+}) => {
   const calculateDailyTotal = (records: TimerRecord[]) => {
     return records.reduce((total, record) => total + record.time, 0);
   };

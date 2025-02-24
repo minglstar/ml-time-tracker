@@ -5,7 +5,6 @@ import TaskInfoEditor from './components/common/TaskInfoEditor';
 import TrackingRecords from './components/tracking/TrackingRecords';
 import TimerDisplay from './components/timer/TimerDisplay';
 import TimerControls from './components/timer/TimerControls';
-// 找不到模块“./store/timerStore”或其相应的类型声明，可能是路径错误或模块未导出
 import { useTimerStore } from './store/timerStore';
 import { useTaskStore } from './store/taskStore';
 import { useProjectStore } from './store/projectStore';
@@ -14,32 +13,35 @@ import { TimerRecord } from './types/types';
 import './App.css';
 
 const App: React.FC = () => {
-  const { isRunning, time, startStop, reset } = useTimerStore();
+  const { isRunning, time, startStop } = useTimerStore();
   const { title, selectedProject, setTitle, setSelectedProject } = useTaskStore();
   const { projects, loadProjects } = useProjectStore();
   const { records, saveRecord, deleteRecord, continueRecord, loadRecords } = useRecordStore();
 
   useEffect(() => {
-    loadRecords();
-    loadProjects();
-  }, []);
+    void Promise.all([
+      loadRecords().catch(error => console.error('加载记录失败:', error)),
+      loadProjects().catch(error => console.error('加载项目失败:', error)),
+    ]);
+  }, [loadProjects, loadRecords]);
 
-  const handleStartStop = async () => {
-    const newIsRunning = await startStop();
-    if (!newIsRunning && time > 0) {
-      await saveRecord(title, time, selectedProject);
-      reset();
-      setTitle('');
-      setSelectedProject('');
-    }
+  const handleStartStop = () => {
+    void (async () => {
+      const newIsRunning = await startStop();
+      if (!newIsRunning && time > 0) {
+        await saveRecord(title, time, selectedProject);
+        setTitle('');
+        setSelectedProject('');
+      }
+    })();
   };
 
   const handleEditTitle = (newTitle: string) => {
     setTitle(newTitle);
   };
 
-  const handleDeleteRecord = async (id: string) => {
-    await deleteRecord(id);
+  const handleDeleteRecord = (id: string) => {
+    void deleteRecord(id);
   };
 
   const handleContinueRecord = (record: TimerRecord) => {
@@ -60,12 +62,10 @@ const App: React.FC = () => {
 
         <TimerDisplay time={time} />
 
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3, mt: -2 }}>
-          <TimerControls
-            isRunning={isRunning}
-            onStartStop={handleStartStop}
-            onReset={reset}
-          />
+        <Box
+          sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3, mt: -2 }}
+        >
+          <TimerControls isRunning={isRunning} onStartStop={handleStartStop} />
         </Box>
 
         <TrackingRecords

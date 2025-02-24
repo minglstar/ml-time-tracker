@@ -7,9 +7,9 @@ export const formatTime = (time: number): string => {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 };
 
-export const groupRecordsByDate = (records: TimerRecord[]): { [key: string]: TimerRecord[] } => {
-  const groups: { [key: string]: TimerRecord[] } = {};
-  
+export const groupRecordsByDate = (records: TimerRecord[]): Record<string, TimerRecord[]> => {
+  const groups: Record<string, TimerRecord[]> = {};
+
   // 按日期降序排序记录
   const sortedRecords = [...records].sort((a, b) => {
     return new Date(b.date).getTime() - new Date(a.date).getTime();

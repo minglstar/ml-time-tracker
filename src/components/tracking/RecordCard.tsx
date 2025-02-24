@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
-import { Card, CardContent, Typography, IconButton, Box, Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  Typography,
+  IconButton,
+  Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  List,
+  ListItem,
+  ListItemText,
+} from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { TimerRecord, Project } from '../../types/types';
@@ -26,49 +38,53 @@ const RecordCard: React.FC<RecordCardProps> = ({ record, onMenuClick, formatTime
     return new Date(timestamp).toLocaleTimeString();
   };
 
+  const project =
+    record.projectId && projects ? projects.find(p => p.id === record.projectId) : null;
+
   return (
-    <Card 
-      variant="outlined" 
+    <Card
+      variant="outlined"
       sx={{
         backgroundColor: '#f5f5f5',
         position: 'relative',
         height: '120px',
         width: '100%',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
       }}
     >
       <CardContent sx={{ flex: 1, pb: '40px !important' }}>
         <Typography variant="subtitle1" sx={{ mb: 0.5 }}>
           {record.title}
         </Typography>
-        {record.projectId && projects && (
-          <Typography variant="body2" sx={{ 
-            mb: 1,
-            color: projects?.find(p => p.id === record.projectId)?.color || 'text.secondary',
-            fontWeight: 'bold'
-          }}>
-            {projects?.find(p => p.id === record.projectId)?.name}
+        {project && (
+          <Typography
+            variant="body2"
+            sx={{
+              mb: 1,
+              color: project.color,
+              fontWeight: 'bold',
+            }}
+          >
+            {project.name}
           </Typography>
         )}
-        
-        <Box sx={{ 
-          position: 'absolute',
-          bottom: 8,
-          left: 16,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1
-        }}>
+
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 8,
+            left: 16,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+          }}
+        >
           <Typography variant="body2" color="text.secondary">
             {formatTime(record.time)}
           </Typography>
           {record.timeSegments && record.timeSegments.length > 0 && (
-            <IconButton
-              size="small"
-              onClick={handleTimeSegmentsClick}
-              sx={{ p: 0.5 }}
-            >
+            <IconButton size="small" onClick={handleTimeSegmentsClick} sx={{ p: 0.5 }}>
               <AccessTimeIcon fontSize="small" />
             </IconButton>
           )}
@@ -79,20 +95,15 @@ const RecordCard: React.FC<RecordCardProps> = ({ record, onMenuClick, formatTime
           sx={{
             position: 'absolute',
             bottom: 8,
-            right: 8
+            right: 8,
           }}
-          onClick={(e) => onMenuClick(e, record)}
+          onClick={e => onMenuClick(e, record)}
         >
           <MoreHorizIcon />
         </IconButton>
       </CardContent>
 
-      <Dialog
-        open={isTimeSegmentsOpen}
-        onClose={handleTimeSegmentsClose}
-        maxWidth="xs"
-        fullWidth
-      >
+      <Dialog open={isTimeSegmentsOpen} onClose={handleTimeSegmentsClose} maxWidth="xs" fullWidth>
         <DialogTitle>时间段列表</DialogTitle>
         <DialogContent>
           <List>

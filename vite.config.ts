@@ -7,7 +7,7 @@ export default defineConfig({
   base: './',
   plugins: [
     react(),
-    webExtension({ 
+    webExtension({
       manifest,
       webExtConfig: {
         background: {
