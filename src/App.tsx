@@ -59,7 +59,7 @@ const App: React.FC = () => {
   const handleStartStop = () => {
     void (async () => {
       const newIsRunning = await startStop();
-      if (!newIsRunning && time > 0) {
+      if (newIsRunning === false && time > 0) {
         await saveRecord(title, time, selectedProject);
         setTitle('');
         setSelectedProject('');

@@ -9,7 +9,7 @@ interface TimerStore {
   lastUpdated: number;
 
   // 操作方法
-  startStop: () => Promise<void>;
+  startStop: () => Promise<boolean>;
   reset: () => Promise<void>;
   setTime: (time: number) => void;
   initState: () => Promise<void>;
@@ -45,6 +45,7 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
       },
     });
     set(state);
+    return state.isRunning; // 返回更新后的运行状态
   },
 
   reset: async () => {
@@ -69,7 +70,7 @@ messageService.listenFromBackground(message => {
     useTimerStore.setState({
       isRunning: message.data.isRunning,
       time: message.data.time,
-      lastUpdated: message.data.lastUpdated
+      lastUpdated: message.data.lastUpdated,
     });
   }
 });

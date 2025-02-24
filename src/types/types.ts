@@ -37,3 +37,8 @@ export interface TaskInfo {
   earned: string;
   customer: string;
 }
+
+export interface ChromeMessage {
+  type: string;
+  data: any;
+}

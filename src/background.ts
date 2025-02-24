@@ -89,7 +89,7 @@ messageService.listenFromPopup(async (message, _sender, sendResponse) => {
       break;
     }
     default: {
-      console.warn('Received unknown message type:', message.type);
+      console.warn('Received unknown message type:', (message as { type: string }).type);
       sendResponse({ error: 'Unknown message type' });
     }
   }
