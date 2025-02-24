@@ -23,19 +23,21 @@ const initTimerState = async () => {
 // 启动计时器
 const startTimer = () => {
   if (!intervalId) {
-    intervalId = setInterval(async () => {
-      timerState.time += 1;
-      timerState.lastUpdated = Date.now();
-      await storageUtils.saveTimerState(timerState);
-      try {
-        // 确保消息发送到所有打开的popup页面
-        await messageService.sendToPopup({
-          type: 'TIMER_UPDATE',
-          data: { ...timerState },
-        });
-      } catch (error) {
-        console.error('Failed to update popup timer:', error);
-      }
+    intervalId = setInterval(() => {
+      void (async () => {
+        timerState.time += 1;
+        timerState.lastUpdated = Date.now();
+        await storageUtils.saveTimerState(timerState);
+        try {
+          // 确保消息发送到所有打开的popup页面
+          await messageService.sendToPopup({
+            type: 'TIMER_UPDATE',
+            data: { ...timerState },
+          });
+        } catch (error) {
+          console.error('Failed to update popup timer:', error);
+        }
+      })();
     }, 1000);
   }
 };
@@ -63,17 +65,18 @@ const stopTimer = async () => {
 // 处理来自popup的消息
 messageService.listenFromPopup(async (message, _sender, sendResponse) => {
   switch (message.type) {
-    case 'REQUEST_TIMER_STATE':
+    case 'REQUEST_TIMER_STATE': {
       sendResponse(timerState);
       break;
-    case 'TIMER_UPDATE':
+    }
+    case 'TIMER_UPDATE': {
       const newState = message.data;
       timerState = newState;
 
       if (newState.isRunning && !intervalId) {
         startTimer();
       } else if (!newState.isRunning && intervalId) {
-        stopTimer();
+        await stopTimer();
       }
 
       await storageUtils.saveTimerState(timerState);
@@ -84,6 +87,11 @@ messageService.listenFromPopup(async (message, _sender, sendResponse) => {
       });
       sendResponse(timerState);
       break;
+    }
+    default: {
+      console.warn('Received unknown message type:', message.type);
+      sendResponse({ error: 'Unknown message type' });
+    }
   }
 });
 

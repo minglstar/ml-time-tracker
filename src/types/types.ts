@@ -20,6 +20,7 @@ export interface TimerRecord {
   earned?: string;
   customer?: string;
   projectId?: string; // Optional to maintain backward compatibility
+  createdAt: number; // Record creation timestamp
 }
 
 export interface TimerState {

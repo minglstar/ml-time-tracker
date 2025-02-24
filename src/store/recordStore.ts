@@ -74,9 +74,10 @@ export const useRecordStore = create<RecordStore>((set, get) => ({
           },
         ],
         projectId,
+        createdAt: currentTime,
       };
 
-      const records = [...get().records, newRecord];
+      const records = [newRecord, ...get().records];
       set({ records });
       await storageUtils.saveTimerRecords(records);
     }

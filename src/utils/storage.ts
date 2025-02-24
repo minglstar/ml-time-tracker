@@ -28,7 +28,9 @@ export const storageUtils = {
     const result = (await chrome.storage.local.get('timerRecords')) as {
       timerRecords?: TimerRecord[];
     };
-    return result.timerRecords ?? [];
+    const records = result.timerRecords ?? [];
+    // Sort records by creation time in ascending order
+    return records.sort((a, b) => b.createdAt - a.createdAt);
   },
 
   async saveProjects(projects: Project[]): Promise<void> {
