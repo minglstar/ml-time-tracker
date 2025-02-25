@@ -1,0 +1,13 @@
+.timer-button {
+  transition: all 0.3s ease;
+}
+
+.timer-button.running {
+  background-color: #ff4444;
+  color: white;
+}
+
+.time-display {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+} 

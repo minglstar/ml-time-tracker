@@ -88,6 +88,12 @@ messageService.listenFromPopup(async (message, _sender, sendResponse) => {
       sendResponse(timerState);
       break;
     }
+    case 'START_TIMER':
+      await timerManager.startTimer(message.data.taskId);
+      break;
+    case 'STOP_TIMER':
+      await timerManager.stopTimer(message.data.taskId);
+      break;
     default: {
       console.warn('Received unknown message type:', (message as { type: string }).type);
       sendResponse({ error: 'Unknown message type' });
@@ -97,3 +103,22 @@ messageService.listenFromPopup(async (message, _sender, sendResponse) => {
 
 // 初始化
 void initTimerState();
+
+class TimerManager {
+  async startTimer(taskId: string) {
+    // ... existing code ...
+
+    // 立即发送状态更新
+    await this.broadcastTimerState({
+      taskId,
+      isRunning: true,
+      currentTime: this.timers[taskId].currentTime,
+    });
+
+    this.timers[taskId].intervalId = setInterval(async () => {
+      // ... existing code ...
+    }, 1000);
+  }
+}
+
+const timerManager = new TimerManager();

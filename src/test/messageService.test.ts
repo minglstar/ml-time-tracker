@@ -1,4 +1,5 @@
 import { messageService } from '../utils/messageService';
+import { TimerManager } from '../background/TimerManager';
 
 // chrome对象已在setup.ts中全局配置
 
@@ -146,6 +147,25 @@ describe('Message Service Tests', () => {
 
       expect(mockCallback).not.toHaveBeenCalled();
       expect(consoleSpy).toHaveBeenCalledWith('Received invalid message:', invalidMessage);
+    });
+  });
+
+  describe('TimerManager', () => {
+    it('should immediately broadcast timer state when starting timer', async () => {
+      const timerManager = new TimerManager();
+      const taskId = 'test-task-1';
+
+      let broadcastReceived = false;
+      // 模拟消息广播
+      chrome.runtime.sendMessage.mockImplementation(message => {
+        if (message.type === 'TIMER_STATE_UPDATE') {
+          broadcastReceived = true;
+        }
+      });
+
+      await timerManager.startTimer(taskId);
+
+      expect(broadcastReceived).toBe(true);
     });
   });
 });
