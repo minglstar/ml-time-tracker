@@ -1,7 +1,47 @@
 import { messageService } from './utils/messageService';
 import { storageUtils, TimerState } from './utils/storage';
+import { TimerManager } from './background/TimerManager';
 
-let timerState: TimerState = {
+// 创建TimerManager实例
+const timerManager = new TimerManager();
+
+// 处理来自popup的消息
+messageService.listenFromPopup(async (message, _sender, sendResponse) => {
+  try {
+    switch (message.type) {
+      case 'REQUEST_TIMER_STATE': {
+        // 如果请求特定任务的状态
+        if (message.data?.taskId) {
+          const state = timerManager.getTimerState(message.data.taskId);
+          sendResponse(state);
+        } else {
+          // 否则返回所有计时器状态
+          const allStates = timerManager.getAllTimerStates();
+          sendResponse(allStates);
+        }
+        break;
+      }
+      case 'START_TIMER':
+        await timerManager.startTimer(message.data.taskId);
+        sendResponse({ success: true });
+        break;
+      case 'STOP_TIMER':
+        await timerManager.stopTimer(message.data.taskId);
+        sendResponse({ success: true });
+        break;
+      default: {
+        console.warn('Received unknown message type:', (message as { type: string }).type);
+        sendResponse({ error: 'Unknown message type' });
+      }
+    }
+  } catch (error) {
+    console.error('处理消息时出错:', error);
+    sendResponse({ error: String(error) });
+  }
+});
+
+// 为了向后兼容，保留旧的计时器逻辑
+let oldTimerState: TimerState = {
   isRunning: false,
   time: 0,
   lastUpdated: Date.now(),
@@ -13,8 +53,8 @@ let intervalId: NodeJS.Timeout | null = null;
 const initTimerState = async () => {
   const savedState = await storageUtils.getTimerState();
   if (savedState) {
-    timerState = savedState;
-    if (timerState.isRunning) {
+    oldTimerState = savedState;
+    if (oldTimerState.isRunning) {
       startTimer();
     }
   }
@@ -25,14 +65,14 @@ const startTimer = () => {
   if (!intervalId) {
     intervalId = setInterval(() => {
       void (async () => {
-        timerState.time += 1;
-        timerState.lastUpdated = Date.now();
-        await storageUtils.saveTimerState(timerState);
+        oldTimerState.time += 1;
+        oldTimerState.lastUpdated = Date.now();
+        await storageUtils.saveTimerState(oldTimerState);
         try {
           // 确保消息发送到所有打开的popup页面
           await messageService.sendToPopup({
             type: 'TIMER_UPDATE',
-            data: { ...timerState },
+            data: { ...oldTimerState },
           });
         } catch (error) {
           console.error('Failed to update popup timer:', error);
@@ -48,77 +88,19 @@ const stopTimer = async () => {
     clearInterval(intervalId);
     intervalId = null;
     // 重置计时器状态
-    timerState = {
+    oldTimerState = {
       isRunning: false,
       time: 0,
       lastUpdated: Date.now(),
     };
     // 保存当前状态并通知所有popup
-    await storageUtils.saveTimerState(timerState);
+    await storageUtils.saveTimerState(oldTimerState);
     await messageService.sendToPopup({
       type: 'TIMER_UPDATE',
-      data: timerState,
+      data: oldTimerState,
     });
   }
 };
 
-// 处理来自popup的消息
-messageService.listenFromPopup(async (message, _sender, sendResponse) => {
-  switch (message.type) {
-    case 'REQUEST_TIMER_STATE': {
-      sendResponse(timerState);
-      break;
-    }
-    case 'TIMER_UPDATE': {
-      const newState = message.data;
-      timerState = newState;
-
-      if (newState.isRunning && !intervalId) {
-        startTimer();
-      } else if (!newState.isRunning && intervalId) {
-        await stopTimer();
-      }
-
-      await storageUtils.saveTimerState(timerState);
-      // 主动通知所有popup页面状态更新
-      await messageService.sendToPopup({
-        type: 'TIMER_UPDATE',
-        data: timerState,
-      });
-      sendResponse(timerState);
-      break;
-    }
-    case 'START_TIMER':
-      await timerManager.startTimer(message.data.taskId);
-      break;
-    case 'STOP_TIMER':
-      await timerManager.stopTimer(message.data.taskId);
-      break;
-    default: {
-      console.warn('Received unknown message type:', (message as { type: string }).type);
-      sendResponse({ error: 'Unknown message type' });
-    }
-  }
-});
-
 // 初始化
 void initTimerState();
-
-class TimerManager {
-  async startTimer(taskId: string) {
-    // ... existing code ...
-
-    // 立即发送状态更新
-    await this.broadcastTimerState({
-      taskId,
-      isRunning: true,
-      currentTime: this.timers[taskId].currentTime,
-    });
-
-    this.timers[taskId].intervalId = setInterval(async () => {
-      // ... existing code ...
-    }, 1000);
-  }
-}
-
-const timerManager = new TimerManager();
