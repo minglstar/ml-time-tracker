@@ -1,19 +1,16 @@
 import { TimerState } from './storage';
+import { ChromeMessage } from '../types/types';
 
 export interface MessagePayload<T = unknown> {
   type: string;
   data: T;
 }
 
-export interface TimerUpdateMessage extends MessagePayload<TimerState> {
-  type: 'TIMER_UPDATE';
-}
-
-export interface RequestTimerStateMessage extends MessagePayload<void> {
-  type: 'REQUEST_TIMER_STATE';
-}
-
-export type ChromeMessage = TimerUpdateMessage | RequestTimerStateMessage;
+export type MessageCallback = (
+  message: ChromeMessage,
+  sender: chrome.runtime.MessageSender,
+  sendResponse: (response?: any) => void
+) => void | boolean | Promise<void>;
 
 export const messageService = {
   // 发送消息到background
@@ -70,6 +67,11 @@ export const messageService = {
         console.error('Received invalid message:', message);
       }
     });
+  },
+
+  // 添加 removeListener 方法
+  removeListener(callback: MessageCallback): void {
+    chrome.runtime.onMessage.removeListener(callback);
   },
 };
 

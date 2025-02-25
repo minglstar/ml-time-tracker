@@ -11,26 +11,35 @@ messageService.listenFromPopup(async (message, _sender, sendResponse) => {
     switch (message.type) {
       case 'REQUEST_TIMER_STATE': {
         // 如果请求特定任务的状态
-        if (message.data?.taskId) {
-          const state = timerManager.getTimerState(message.data.taskId);
+        if (message.data && 'taskId' in message.data) {
+          const state = timerManager.getTimerState(message.data.taskId as string);
           sendResponse(state);
         } else {
           // 否则返回所有计时器状态
-          const allStates = timerManager.getAllTimerStates();
-          sendResponse(allStates);
+          sendResponse(timerManager.getAllTimerStates());
         }
         break;
       }
-      case 'START_TIMER':
-        await timerManager.startTimer(message.data.taskId);
-        sendResponse({ success: true });
+      case 'START_TIMER': {
+        if (message.data && 'taskId' in message.data) {
+          await timerManager.startTimer(message.data.taskId as string);
+          sendResponse({ success: true });
+        } else {
+          sendResponse({ error: 'Missing taskId' });
+        }
         break;
-      case 'STOP_TIMER':
-        await timerManager.stopTimer(message.data.taskId);
-        sendResponse({ success: true });
+      }
+      case 'STOP_TIMER': {
+        if (message.data && 'taskId' in message.data) {
+          await timerManager.stopTimer(message.data.taskId as string);
+          sendResponse({ success: true });
+        } else {
+          sendResponse({ error: 'Missing taskId' });
+        }
         break;
+      }
       default: {
-        console.warn('Received unknown message type:', (message as { type: string }).type);
+        console.warn('Unknown message type:', message.type);
         sendResponse({ error: 'Unknown message type' });
       }
     }
@@ -50,7 +59,7 @@ let oldTimerState: TimerState = {
 let intervalId: NodeJS.Timeout | null = null;
 
 // 初始化时从storage加载计时器状态
-const initTimerState = async () => {
+export const initTimerState = async () => {
   const savedState = await storageUtils.getTimerState();
   if (savedState) {
     oldTimerState = savedState;

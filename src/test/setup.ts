@@ -1,14 +1,16 @@
 import '@jest/globals';
 import '@testing-library/jest-dom';
-import { ChromeMessage, TimerState } from '../types/types';
+// 移除未使用的导入
+// import { ChromeMessage, TimerState } from '../types/types';
 
 // 扩展全局类型以支持Jest mock
 declare global {
   namespace jest {
     interface Mock<T = any> {
-      mockImplementation: (implementation: Function) => jest.Mock;
+      mockImplementation: (implementation: (...args: unknown[]) => unknown) => jest.Mock<T>;
       mock: {
-        calls: any[][];
+        calls: unknown[][];
+        instances: unknown[];
       };
     }
   }
@@ -18,15 +20,18 @@ declare global {
 const mockChrome = {
   storage: {
     local: {
-      get: jest.fn() as jest.Mock<typeof chrome.storage.local.get>,
-      set: jest.fn() as jest.Mock<typeof chrome.storage.local.set>,
+      get: jest.fn(),
+      set: jest.fn(),
       remove: jest.fn(),
+      clear: jest.fn(),
     },
   },
   runtime: {
-    sendMessage: jest.fn() as jest.Mock<typeof chrome.runtime.sendMessage>,
+    sendMessage: jest.fn(),
     onMessage: {
-      addListener: jest.fn(),
+      addListener: jest.fn(() => {
+        return { mock: { calls: [[]] } };
+      }),
       removeListener: jest.fn(),
     },
     lastError: null,
@@ -39,4 +44,16 @@ global.chrome = mockChrome;
 // 清理所有模拟的实现
 beforeEach(() => {
   jest.clearAllMocks();
+});
+
+// 更新 chrome.storage.local.get 的模拟实现
+(chrome.storage.local.get as jest.Mock).mockImplementation((keys, callback) => {
+  // 根据请求的键返回不同的数据
+  if (keys === 'timerState') {
+    callback({ timerState: null });
+  } else if (keys === 'savedTimers') {
+    callback({ savedTimers: {} });
+  } else {
+    callback({});
+  }
 });
