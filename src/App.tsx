@@ -81,8 +81,8 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Container maxWidth="sm" sx={{ p: 0, minHeight: '100vh', bgcolor: 'transparent' }}>
-        <Box sx={{ p: 3, bgcolor: 'white', minHeight: '100vh' }}>
+      <Container maxWidth="sm" className="app-container-wrapper">
+        <Box className="app-container-inner">
           <HeaderControls />
 
           <TaskInfoEditor
@@ -94,9 +94,7 @@ const App: React.FC = () => {
 
           <TimerDisplay time={time} />
 
-          <Box
-            sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3, mt: -2 }}
-          >
+          <Box className="timer-controls-container">
             <TimerControls isRunning={isRunning} onStartStop={handleStartStop} />
           </Box>
 
